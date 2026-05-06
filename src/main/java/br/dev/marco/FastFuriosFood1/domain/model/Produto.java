@@ -1,10 +1,28 @@
 package br.dev.marco.FastFuriosFood1.domain.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+@Entity
 public class Produto {
-    private long id;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @NotBlank
+    @Size(max = 60)
     private String nome;
+    
     private double preco;
-    private String ingrediente;
+    
+    @NotBlank
+    @Size(max = 255)
+    private String ingredientes;
 
     public Produto() {
     }
@@ -31,11 +49,11 @@ public class Produto {
         return this.id == other.id;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -55,19 +73,19 @@ public class Produto {
         this.preco = preco;
     }
 
-    public String getIngrediente() {
-        return ingrediente;
+    public String getIngredientes() {
+        return ingredientes;
     }
 
-    public void setIngrediente(String ingrediente) {
-        this.ingrediente = ingrediente;
+    public void setIngredientes(String ingredientes) {
+        this.ingredientes = ingredientes;
     }
 
-    public Produto(long id, String nome, double preco, String ingrediente) {
+    public Produto(Long id, String nome, double preco, String ingrediente) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
-        this.ingrediente = ingrediente;
+        this.ingredientes = ingrediente;
     }
 } 
 

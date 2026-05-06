@@ -1,47 +1,75 @@
 package br.dev.marco.FastFuriosFood1.domain.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+@Entity
 public class Pedido {
-    private long id;
-    private String nome;
-    private String cpf;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime data;
+
+    private Double total;
+
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    private List<ItensPedido> itens;
 
     public Pedido() {
     }
 
-    public Pedido(long id, String nome, String cpf) {
+    public Pedido(Long id, LocalDateTime data, Double total, List<ItensPedido> itens) {
         this.id = id;
-        this.nome = nome;
-        this.cpf = cpf;
+        this.data = data;
+        this.total = total;
+        this.itens = itens;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getNome() {
-        return nome;
+    public LocalDateTime getData() {
+        return data;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setData(LocalDateTime data) {
+        this.data = data;
     }
 
-    public String getCpf() {
-        return cpf;
+    public Double getTotal() {
+        return total;
     }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public List<ItensPedido> getItens() {
+        return itens;
+    }
+
+    public void setItens(List<ItensPedido> itens) {
+        this.itens = itens;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (int) (this.id ^ (this.id >>> 32));
+        int hash = 3;
+        hash = 29 * hash + Objects.hashCode(this.id);
         return hash;
     }
 
@@ -57,7 +85,8 @@ public class Pedido {
             return false;
         }
         final Pedido other = (Pedido) obj;
-        return this.id == other.id;
+        return Objects.equals(this.id, other.id);
     }
-    
+
+   
 }
