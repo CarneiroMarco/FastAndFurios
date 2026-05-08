@@ -16,9 +16,14 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String nome;
+    
+    private String telefone;
 
     private LocalDateTime data;
 
+       private StatusPedido status;
     private Double total;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
@@ -27,19 +32,47 @@ public class Pedido {
     public Pedido() {
     }
 
-    public Pedido(Long id, LocalDateTime data, Double total, List<ItensPedido> itens) {
+    public Pedido(Long id, String nome, String telefone, LocalDateTime data, StatusPedido status, Double total, List<ItensPedido> itens) {
         this.id = id;
+        this.nome = nome;
+        this.telefone = telefone;
         this.data = data;
+        this.status = status;
         this.total = total;
         this.itens = itens;
     }
 
+    
     public Long getId() {
         return id;
     }
 
+    public StatusPedido getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
+
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 
     public LocalDateTime getData() {
@@ -68,7 +101,7 @@ public class Pedido {
 
     @Override
     public int hashCode() {
-        int hash = 3;
+        int hash = 7;
         hash = 29 * hash + Objects.hashCode(this.id);
         return hash;
     }
@@ -88,5 +121,8 @@ public class Pedido {
         return Objects.equals(this.id, other.id);
     }
 
+  
+    
+    
    
 }

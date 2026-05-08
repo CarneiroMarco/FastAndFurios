@@ -1,7 +1,9 @@
 package br.dev.marco.FastFuriosFood1.api.controller;
 
+
 import br.dev.marco.FastFuriosFood1.domain.model.Produto;
 import br.dev.marco.FastFuriosFood1.domain.repository.ProdutoRepository;
+import br.dev.marco.FastFuriosFood1.service.ProdutoService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +24,9 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+    
+    @Autowired
+    private ProdutoService produtoService;
 
     @GetMapping("/produto/{produtoID}")
     public ResponseEntity<Produto> buscar(@PathVariable Long produtoID) {
@@ -37,7 +42,7 @@ public class ProdutoController {
     @PostMapping("/produto")
     @ResponseStatus(HttpStatus.CREATED)
     public Produto adicionar(@Valid @RequestBody Produto produto){
-        return produtoRepository.save(produto);
+        return produtoService.salvar(produto);
     }
     
     
@@ -50,9 +55,10 @@ public ResponseEntity<Produto> atualizar(@Valid @PathVariable Long produtoID,
     if (!produtoRepository.existsById(produtoID)) {
         return ResponseEntity.notFound().build();
     }
+    
 
     produto.setId(produtoID);
-    produto = produtoRepository.save(produto);
+    produto = produtoService.salvar(produto);
     return ResponseEntity.ok(produto);
 }
 @DeleteMapping("/produto/{produtoID}")
@@ -63,7 +69,7 @@ public ResponseEntity<Void> excluir(@PathVariable Long produtoID) {
         return ResponseEntity.notFound().build();
     }
 
-    produtoRepository.deleteById(produtoID);
+    produtoService.excluir(produtoID);
     return ResponseEntity.noContent().build();
 }   
 }

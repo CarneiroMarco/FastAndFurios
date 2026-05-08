@@ -1,4 +1,4 @@
-package FastFuriousFood.service.domain.exception;
+package br.dev.marco.FastFuriosFood1.api.exceptionhandler;
 
 
 public class DomainException extends RuntimeException {
