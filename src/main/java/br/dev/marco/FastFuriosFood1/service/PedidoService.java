@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PedidoService {
@@ -18,35 +20,131 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-     @Autowired
+    @Autowired
     private ProdutoRepository produtoRepository;
 
-    public Pedido criarPedido(Pedido pedido) {
+    // Listar todos os pedidos
+    public List<Pedido> listar() {
+        return pedidoRepository.findAll();
+    }
 
-        pedido.setStatus(StatusPedido.ABERTO);
-        pedido.setData(LocalDateTime.now());
-        
+    // Buscar pedido por ID
+    public Pedido buscarOuFalhar(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Pedido não encontrado"));
+    }
 
-        double total = 0;
+    // Criar pedido
+    public Pedido criar(PedidoDTO dto) {
 
-        for (ItensPedido item : pedido.getItens()) {
-            Produto produto = produtoRepository.findById(
-                item.getProduto().getId()
-            ).orElseThrow();
+        Pedido novoPedido = new Pedido();
+        novoPedido.setStatus(StatusPedido.ABERTO);
 
+        for (ItensPedidoDTO itemDTO : dto.getItens()) {
+
+            Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST,
+                                    "Produto não encontrado"));
+
+            ItensPedido item = new ItensPedido();
             item.setProduto(produto);
-            item.setPedido(pedido);
+            item.setQuantidade(itemDTO.getQuantidade());
             item.setvUnit(produto.getPreco());
 
-            total += item.getQtd() * item.getvUnit();
+            novoPedido.adicionarItem(item);
         }
 
-        pedido.setTotal(total);
-        
+        novoPedido = pedidoRepository.save(novoPedido);
+        novoPedido.setNumero(novoPedido.getId().intValue());
+
+        return pedidoRepository.save(novoPedido);
+    }
+
+    // Atualizar pedido
+    public Pedido atualizar(Long id, Pedido pedidoAtualizado) {
+
+        Pedido existente = buscarOuFalhar(id);
+
+        if (pedidoAtualizado.getItens() == null
+                || pedidoAtualizado.getItens().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Pedido sem itens");
+        }
+
+        existente.getItens().clear();
+
+        for (ItensPedido item : pedidoAtualizado.getItens()) {
+
+            if (item.getProduto() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Produto obrigatório");
+            }
+
+            Produto produto = produtoRepository
+                    .findById(item.getProduto().getId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST,
+                                    "Produto não encontrado"));
+
+            item.setProduto(produto);
+            item.setvUnit(produto.getPreco());
+
+            existente.adicionarItem(item);
+        }
+
+        return pedidoRepository.save(existente);
+    }
+
+    // Cancelar pedido
+    public Pedido cancelar(Long id) {
+
+        Pedido pedido = buscarOuFalhar(id);
+
+        if (pedido.getStatus() == StatusPedido.ENTREGUE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Pedido já entregue não pode ser cancelado");
+        }
+
+        pedido.setStatus(StatusPedido.CANCELADO);
+
         return pedidoRepository.save(pedido);
     }
-    public Optional<Pedido> atualizaStatus(Long pedidoId, StatusPedido status){
-        
-        Optional<Pedido> optPedido = pedidoRepository.findById(pedidoId);
+
+    // Buscar por status
+    public List<Pedido> buscarPorStatus(StatusPedido status) {
+        return pedidoRepository.findByStatus(status);
+    }
+
+    // Atualizar status
+    public Pedido atualizarStatus(Long id, StatusPedido novoStatus) {
+
+        Pedido pedido = buscarOuFalhar(id);
+
+        if (pedido.getStatus() == StatusPedido.ABERTO
+                && novoStatus == StatusPedido.PRONTO) {
+
+            pedido.setStatus(novoStatus);
+
+        } else if (pedido.getStatus() == StatusPedido.PRONTO
+                && novoStatus == StatusPedido.ENTREGUE) {
+
+            pedido.setStatus(novoStatus);
+
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Transição de status inválida");
+        }
+
+        return pedidoRepository.save(pedido);
     }
 }
