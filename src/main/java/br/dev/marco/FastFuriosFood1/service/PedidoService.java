@@ -1,5 +1,7 @@
 package br.dev.marco.FastFuriosFood1.service;
 
+import br.dev.marco.FastFuriosFood1.api.dto.ItensPedidoDTO;
+import br.dev.marco.FastFuriosFood1.api.dto.PedidoDTO;
 import br.dev.marco.FastFuriosFood1.domain.model.ItensPedido;
 import br.dev.marco.FastFuriosFood1.domain.model.Pedido;
 import br.dev.marco.FastFuriosFood1.domain.model.Produto;
@@ -7,6 +9,7 @@ import br.dev.marco.FastFuriosFood1.domain.model.StatusPedido;
 import br.dev.marco.FastFuriosFood1.domain.repository.PedidoRepository;
 import br.dev.marco.FastFuriosFood1.domain.repository.ProdutoRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,8 @@ public class PedidoService {
     public Pedido criar(PedidoDTO dto) {
 
         Pedido novoPedido = new Pedido();
+        List<ItensPedido> itensNovoPedido = new ArrayList<>();
+        
         novoPedido.setStatus(StatusPedido.ABERTO);
 
         for (ItensPedidoDTO itemDTO : dto.getItens()) {
@@ -51,17 +56,13 @@ public class PedidoService {
                                     HttpStatus.BAD_REQUEST,
                                     "Produto não encontrado"));
 
-            ItensPedido item = new ItensPedido();
+            ItensPedido item = new ItensPedido();            
             item.setProduto(produto);
-            item.setQuantidade(itemDTO.getQuantidade());
+            item.setQtd(itemDTO.getQtd());
             item.setvUnit(produto.getPreco());
-
-            novoPedido.adicionarItem(item);
+            itensNovoPedido.add(item);
         }
-
-        novoPedido = pedidoRepository.save(novoPedido);
-        novoPedido.setNumero(novoPedido.getId().intValue());
-
+        novoPedido.setItens(itensNovoPedido);
         return pedidoRepository.save(novoPedido);
     }
 
@@ -69,7 +70,8 @@ public class PedidoService {
     public Pedido atualizar(Long id, Pedido pedidoAtualizado) {
 
         Pedido existente = buscarOuFalhar(id);
-
+        List<ItensPedido> itensPedido = new ArrayList<>();
+        
         if (pedidoAtualizado.getItens() == null
                 || pedidoAtualizado.getItens().isEmpty()) {
             throw new ResponseStatusException(
@@ -79,6 +81,8 @@ public class PedidoService {
 
         existente.getItens().clear();
 
+        
+        
         for (ItensPedido item : pedidoAtualizado.getItens()) {
 
             if (item.getProduto() == null) {
@@ -96,9 +100,9 @@ public class PedidoService {
 
             item.setProduto(produto);
             item.setvUnit(produto.getPreco());
-
-            existente.adicionarItem(item);
+            itensPedido.add(item);
         }
+            existente.setItens(itensPedido);
 
         return pedidoRepository.save(existente);
     }
